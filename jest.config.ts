@@ -15,7 +15,7 @@ const genModuleNameMapper = (paths: Record<string, string[]>) =>
 const config: Config = {
     testResultsProcessor: 'jest-sonar-reporter',
     collectCoverage: true,
-    coverageDirectory: '../coverage/',
+    coverageDirectory: './coverage/',
     coverageReporters: ['text', 'text-summary', 'lcov'],
     collectCoverageFrom: ['./src/**'],
     coverageThreshold: {
