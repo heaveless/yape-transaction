@@ -1,0 +1,27 @@
+{
+    "extends": "@tsconfig/node22/tsconfig.json",
+    "compilerOptions": {
+        "target": "ES2020",
+        "module": "ESNext",
+        "moduleResolution": "Node",
+        "resolveJsonModule": true,
+        "removeComments": true,
+        "esModuleInterop": true,
+        "isolatedModules": true,
+        "skipLibCheck": true,
+        "strict": true,
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "./src/*"
+            ]
+        }
+    },
+    "include": [
+        "src/**/*",
+        "test/**/*"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

@@ -1,0 +1,90 @@
+service: yape-transaction
+
+provider:
+  name: aws
+  stage: prod
+  runtime: nodejs22.x
+  architecture: arm64
+  region: us-east-1
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:GetItem
+            - dynamodb:Query
+          Resource:
+            - arn:aws:dynamodb:${self:provider.region}:426050856354:table/${self:custom.tableTransaction}
+            - arn:aws:dynamodb:${self:provider.region}:426050856354:table/${self:custom.tableTransaction}/index/gsiSourceAccountCreatedAt
+  environment:
+    DYNAMO_TABLE_TRANSACTION: ${self:custom.tableTransaction}
+
+custom:
+  tableTransaction: tb-transaction
+
+package:
+  individually: true
+  patterns:
+    - '!package.json'
+    - '!package-lock.json'
+    - '!serverless.yml'
+    - '!tsconfig.json'
+
+resources:
+  Resources:
+    TableTransaction:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.tableTransaction}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+          - AttributeName: sourceAccountId
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: gsiSourceAccountCreatedAt
+            KeySchema:
+              - AttributeName: sourceAccountId
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST
+
+functions:
+  create:
+    handler: src/functions/create/index.handler
+    name: fn-${self:service}-create-${sls:stage}
+    events:
+      - httpApi:
+          method: POST 
+          path: /api/transactions
+  update:
+    handler: src/functions/update/index.handler
+    name: fn-${self:service}-update-${sls:stage}
+    events:
+      - httpApi:
+          method: PATCH
+          path: /api/transactions
+  get-one:
+    handler: src/functions/get-one/index.handler
+    name: fn-${self:service}-get-one-${sls:stage}
+    events:
+      - httpApi:
+          method: GET
+          path: /api/transactions/{id}
+  get-many:
+    handler: src/functions/get-many/index.handler
+    name: fn-${self:service}-get-many-${sls:stage}
+    events:
+      - httpApi:
+          method: GET
+          path: /api/transactions
